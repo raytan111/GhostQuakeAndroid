@@ -1,4 +1,4 @@
-package ghost.quake.ui.theme
+package ghost.quake.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

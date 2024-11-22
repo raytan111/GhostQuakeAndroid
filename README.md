@@ -1,3 +1,6 @@
+Para la aplicación Android hecha con Kotlin y Jetpack Compose, 
+usaremos Clean Architecture con el patrón MVVM (Model-View-ViewModel).
+
 app/
 ├── di/                      # Dependency Injection
 ├── domain/                  # Reglas de negocio
@@ -21,17 +24,5 @@ app/
 │   ├── navigation/         # Navegación
 │   ├── theme/             # Estilos y temas
 │   └── screens/           # Pantallas de la app
-│       ├── home/
-│       │   ├── HomeScreen.kt
-│       │   ├── HomeViewModel.kt
-│       │   └── components/    # Componentes específicos de la pantalla
-│       ├── map/
-│       │   ├── MapScreen.kt
-│       │   ├── MapViewModel.kt
-│       │   └── components/
-│       └── settings/
-│           ├── SettingsScreen.kt
-│           ├── SettingsViewModel.kt
-│           └── components/
 │
 └── util/                  # Utilidades y extensiones
