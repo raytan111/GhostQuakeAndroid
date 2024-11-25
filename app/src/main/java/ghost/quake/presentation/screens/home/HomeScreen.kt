@@ -705,27 +705,14 @@ private fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    // Header del acordeón
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(180.dp)
-                                .height(24.dp)
-                                .shimmerEffect()
-                                .clip(RoundedCornerShape(4.dp))
-                        )
-                        // Indicador de expandir
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .shimmerEffect()
-                                .clip(RoundedCornerShape(4.dp))
-                        )
-                    }
+                    // Header del acordeón - eliminado el Arrangement.SpaceBetween y el segundo Box
+                    Box(
+                        modifier = Modifier
+                            .width(180.dp)
+                            .height(24.dp)
+                            .shimmerEffect()
+                            .clip(RoundedCornerShape(4.dp))
+                    )
 
                     // Contenido del acordeón (mostrar en estado colapsado por defecto)
                     Column(
@@ -766,14 +753,6 @@ private fun StatRowSkeleton() {
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icono
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .shimmerEffect()
-                .clip(RoundedCornerShape(4.dp))
-        )
-        Spacer(modifier = Modifier.width(8.dp))
         // Título
         Box(
             modifier = Modifier
