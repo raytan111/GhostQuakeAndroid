@@ -694,7 +694,7 @@ private fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
                 }
             }
 
-            // Estadísticas skeleton
+            // Estadísticas skeleton con acordeón
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -705,43 +705,36 @@ private fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .width(180.dp)
-                            .height(24.dp)
-                            .shimmerEffect()
-                            .clip(RoundedCornerShape(4.dp))
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    repeat(3) {
-                        Row(
+                    // Header del acordeón
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .shimmerEffect()
-                                    .clip(RoundedCornerShape(4.dp))
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(120.dp)
-                                    .height(16.dp)
-                                    .shimmerEffect()
-                                    .clip(RoundedCornerShape(4.dp))
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Box(
-                                modifier = Modifier
-                                    .width(60.dp)
-                                    .height(16.dp)
-                                    .shimmerEffect()
-                                    .clip(RoundedCornerShape(4.dp))
-                            )
+                                .width(180.dp)
+                                .height(24.dp)
+                                .shimmerEffect()
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+                        // Indicador de expandir
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .shimmerEffect()
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+                    }
+
+                    // Contenido del acordeón (mostrar en estado colapsado por defecto)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(0.dp)  // Altura 0 para simular estado colapsado
+                    ) {
+                        repeat(3) {
+                            StatRowSkeleton()
                         }
                     }
                 }
@@ -760,46 +753,87 @@ private fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
 
         // Lista de sismos skeleton
         items(5) {
-            Card(
+            EarthquakeItemSkeleton(colors = colors)
+        }
+    }
+}
+
+@Composable
+private fun StatRowSkeleton() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icono
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .shimmerEffect()
+                .clip(RoundedCornerShape(4.dp))
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        // Título
+        Box(
+            modifier = Modifier
+                .width(120.dp)
+                .height(16.dp)
+                .shimmerEffect()
+                .clip(RoundedCornerShape(4.dp))
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        // Valor
+        Box(
+            modifier = Modifier
+                .width(60.dp)
+                .height(16.dp)
+                .shimmerEffect()
+                .clip(RoundedCornerShape(4.dp))
+        )
+    }
+}
+
+@Composable
+private fun EarthquakeItemSkeleton(colors: DarkModeColors) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.cardBackground
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colors.cardBackground
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
+                    .size(60.dp)
+                    .shimmerEffect()
+                    .clip(RoundedCornerShape(12.dp))
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .shimmerEffect()
-                            .clip(RoundedCornerShape(12.dp))
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Box(
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(20.dp)
-                                .shimmerEffect()
-                                .clip(RoundedCornerShape(4.dp))
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .width(150.dp)
-                                .height(16.dp)
-                                .shimmerEffect()
-                                .clip(RoundedCornerShape(4.dp))
-                        )
-                    }
-                }
+                        .width(200.dp)
+                        .height(20.dp)
+                        .shimmerEffect()
+                        .clip(RoundedCornerShape(4.dp))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(16.dp)
+                        .shimmerEffect()
+                        .clip(RoundedCornerShape(4.dp))
+                )
             }
         }
     }
