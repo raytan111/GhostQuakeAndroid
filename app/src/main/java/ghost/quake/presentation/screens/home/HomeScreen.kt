@@ -36,9 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.content.res.Configuration
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.graphics.Shadow
 import ghost.quake.presentation.theme.DarkModeColors
 import ghost.quake.presentation.theme.getColorsTheme
@@ -186,7 +183,7 @@ private fun PortraitLayout(
                 )
             ) {
                 Text(
-                    text = "Últimos Sismos",
+                    text = "Sismos Recientes",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         color = colors.textColor,
                         fontWeight = FontWeight.Bold
@@ -316,51 +313,76 @@ private fun LandscapeLayout(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun QuickStats(
     earthquakes: List<Earthquake>,
     colors: DarkModeColors
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
         colors = CardDefaults.cardColors(containerColor = colors.cardBackground),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        onClick = { expanded = !expanded }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = "Estadísticas últimas 24h",
-                style = MaterialTheme.typography.titleMedium,
-                color = colors.textColor,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Estadísticas últimas 24h",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.textColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-            val avgMagnitude = earthquakes.map { it.magnitude }.average()
-            val strongestQuake = earthquakes.maxByOrNull { it.magnitude }
-            val avgDepth = earthquakes.map { it.depth }.average()
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
 
-            StatRow(
-                icon = Icons.Rounded.Straighten,
-                title = "Magnitud promedio",
-                value = "%.1f".format(avgMagnitude),
-                colors = colors
-            )
-            StatRow(
-                icon = Icons.Rounded.CalendarMonth,
-                title = "Sismo más fuerte",
-                value = "%.1f".format(strongestQuake?.magnitude ?: 0.0),
-                colors = colors
-            )
-            StatRow(
-                icon = Icons.Rounded.LocationOn,
-                title = "Profundidad promedio",
-                value = "${avgDepth.toInt()} km",
-                colors = colors
-            )
+                    val avgMagnitude = earthquakes.map { it.magnitude }.average()
+                    val strongestQuake = earthquakes.maxByOrNull { it.magnitude }
+                    val avgDepth = earthquakes.map { it.depth }.average()
+
+                    StatRow(
+                        icon = Icons.Rounded.Straighten,
+                        title = "Magnitud promedio",
+                        value = "%.1f".format(avgMagnitude),
+                        colors = colors
+                    )
+                    StatRow(
+                        icon = Icons.Rounded.CalendarMonth,
+                        title = "Sismo más fuerte",
+                        value = "%.1f".format(strongestQuake?.magnitude ?: 0.0),
+                        colors = colors
+                    )
+                    StatRow(
+                        icon = Icons.Rounded.LocationOn,
+                        title = "Profundidad promedio",
+                        value = "${avgDepth.toInt()} km",
+                        colors = colors
+                    )
+                }
+            }
         }
     }
 }
