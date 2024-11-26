@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 android {
@@ -35,6 +37,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+    kapt {
+        correctErrorTypes = true
     }
     buildFeatures {
         compose = true
@@ -91,4 +96,14 @@ dependencies {
     implementation (libs.material3)
 
     implementation (libs.androidx.material.icons.extended)
+
+    // Retrofit
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }
