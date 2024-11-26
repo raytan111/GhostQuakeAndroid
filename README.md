@@ -16,7 +16,8 @@ app/
 │   ├── remote/             # Fuentes de datos remotos (API)
 │   │   ├── api/
 │   │   ├── dto/
-│   │   └── service/
+│   │   ├── service/
+│   │   └── mapper/
 │   ├── repository/         # Implementaciones de repositorios
 │   └── mapper/             # Conversores de datos
 │
