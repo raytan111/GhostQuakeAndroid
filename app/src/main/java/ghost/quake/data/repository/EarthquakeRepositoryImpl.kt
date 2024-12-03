@@ -21,4 +21,11 @@ class EarthquakeRepositoryImpl @Inject constructor(
             throw IOException("Error: ${response.code()}")
         }
     }
+
+    override suspend fun getEarthquakeById(id: String): Earthquake? {
+        return runCatching {
+            val earthquakes = getRecentEarthquakes().getOrNull()
+            earthquakes?.find { it.id == id }
+        }.getOrNull()
+    }
 }

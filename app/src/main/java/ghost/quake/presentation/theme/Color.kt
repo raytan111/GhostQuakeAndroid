@@ -33,11 +33,11 @@ object DarkThemeColors {
 }
 
 object EarthquakeColors {
-    val Low = Color(0xFF388E3C)      // Verde para sismos bajos
-    val Medium = Color(0xFFF57F17)    // Naranja para sismos medios
-    val MediumHigh = Color(0xFFFF5722) // Naranja rojizo para sismos medio-altos
-    val High = Color(0xFFD32F2F)      // Rojo para sismos altos
-    val Severe = Color(0xFFB71C1C)    // Rojo oscuro para sismos severos
+    val Low = Color(0xFF4CAF50)      // Verde para sismos bajos
+    val Medium = Color(0xFFFBC02D)   // Amarillo para sismos medios
+    val MediumHigh = Color(0xFFFFA000) // Naranja para sismos medio-altos
+    val High = Color(0xFFF57F17)     // Naranja oscuro para sismos altos
+    val Severe = Color(0xFFD32F2F)   // Rojo oscuro para sismos severos
 }
 
 data class DarkModeColors(

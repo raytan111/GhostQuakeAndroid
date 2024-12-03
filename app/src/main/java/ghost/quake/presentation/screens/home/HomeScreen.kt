@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import android.content.res.Configuration
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import ghost.quake.presentation.screens.home.components.layouts.LandscapeLayout
 import ghost.quake.presentation.screens.home.components.layouts.PortraitLayout
 import ghost.quake.presentation.screens.home.components.loading.EarthquakeSkeletonLoading
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    navController: NavController // Nuevo parámetro
 ) {
     val state = viewModel.state.value
     val colors = getColorsTheme()
@@ -60,13 +62,19 @@ fun HomeScreen(
                 LandscapeLayout(
                     state = state,
                     colors = colors,
-                    isVisible = isVisible
+                    isVisible = isVisible,
+                    onEarthquakeClick = { earthquakeId ->
+                        navController.navigate("detail/$earthquakeId")
+                    }
                 )
             } else {
                 PortraitLayout(
                     state = state,
                     colors = colors,
-                    isVisible = isVisible
+                    isVisible = isVisible,
+                    onEarthquakeClick = { earthquakeId ->
+                        navController.navigate("detail/$earthquakeId")
+                    }
                 )
             }
         }

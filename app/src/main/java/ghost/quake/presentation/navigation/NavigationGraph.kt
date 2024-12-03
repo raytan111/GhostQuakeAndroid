@@ -3,11 +3,19 @@ package ghost.quake.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import ghost.quake.presentation.screens.details.EarthquakeDetailScreen
 import ghost.quake.presentation.screens.home.HomeScreen
 import ghost.quake.presentation.screens.map.MapScreen
 import ghost.quake.presentation.screens.settings.SettingsScreen
+import ghost.quake.presentation.theme.getColorsTheme
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
+
 
 @Composable
 fun NavigationGraph(
@@ -19,14 +27,44 @@ fun NavigationGraph(
         startDestination = Screen.Home.route,
         modifier = modifier
     ) {
-        composable(Screen.Map.route) {
-            MapScreen()
-        }
-        composable(Screen.Home.route) {
-            HomeScreen()
-        }
-        composable(Screen.Settings.route) {
-            SettingsScreen()
+        composable(Screen.Map.route) { MapScreen() }
+        composable(Screen.Home.route) { HomeScreen(navController = navController) }
+        composable(Screen.Settings.route) { SettingsScreen() }
+
+        composable(
+            route = Screen.Details.route,
+            arguments = listOf(navArgument("earthquakeId") { type = NavType.StringType }),
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(300)
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(300)
+                )
+            },
+            popEnterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(300)
+                )
+            },
+            popExitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(300)
+                )
+            }
+        ) { backStackEntry ->
+            val earthquakeId = backStackEntry.arguments?.getString("earthquakeId") ?: ""
+            EarthquakeDetailScreen(
+                id = earthquakeId,
+                colors = getColorsTheme(),
+                navController = navController // Aquí pasamos el navController
+            )
         }
     }
 }

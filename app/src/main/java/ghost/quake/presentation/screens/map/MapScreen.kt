@@ -20,13 +20,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import ghost.quake.presentation.theme.getMagnitudeColor
+import ghost.quake.presentation.theme.LightThemeColors
 
 @Composable
 fun MapScreen(
@@ -109,11 +113,7 @@ fun MapScreen(
                     ),
                     title = earthquake.place,
                     snippet = "Magnitud: ${earthquake.magnitude}, Profundidad: ${earthquake.depth}km",
-                    icon = when {
-                        earthquake.magnitude < 4.0 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-                        earthquake.magnitude < 6.0 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-                        else -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                    }
+                    icon = getMarkerIcon(earthquake.magnitude)
                 )
             }
         }
@@ -128,33 +128,59 @@ fun MapScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp) // Tamaño fijo del box
-                    .background(Color.White)
+                    .height(250.dp)
+                    .background(LightThemeColors.CardBackground)
                     .padding(16.dp)
             ) {
                 Column {
                     Text(
-                        text = "Información de Terremotos",
-                        style = MaterialTheme.typography.titleLarge
+                        text = "Información de Sismos",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = LightThemeColors.PrimaryText,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Hola texto de prueba",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+
+                    // Earthquake Details
+                    state.earthquakes.take(3).forEach { earthquake ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(getMagnitudeColor(earthquake.magnitude))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = earthquake.place,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LightThemeColors.PrimaryText
+                                )
+                                Text(
+                                    text = "Magnitud: ${earthquake.magnitude}, Profundidad: ${earthquake.depth}km",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LightThemeColors.SecondaryText
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
 
-        // Botón flotante para mostrar/ocultar información
+        // Floating Action Button for Info
         FloatingActionButton(
             onClick = {
                 isAccordionExpanded = !isAccordionExpanded
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd) // Botón movido a la derecha
+                .align(Alignment.BottomEnd)
                 .padding(
-                    bottom = if (isAccordionExpanded) 210.dp else 16.dp, // Ajuste dinámico según el tamaño del acordeón
+                    bottom = if (isAccordionExpanded) 260.dp else 16.dp,
                     end = 16.dp
                 )
         ) {
@@ -165,7 +191,7 @@ fun MapScreen(
             )
         }
 
-        // Botón flotante para solicitar permisos (si no se tienen)
+        // Floating Action Button for Location Permissions
         if (!hasLocationPermission) {
             FloatingActionButton(
                 onClick = {
@@ -182,4 +208,18 @@ fun MapScreen(
             }
         }
     }
+}
+
+// Helper function to get marker icon based on magnitude
+private fun getMarkerIcon(magnitude: Double): BitmapDescriptor {
+    // Convert the color to its hue value for BitmapDescriptorFactory
+    val hue = when (val color = getMagnitudeColor(magnitude)) {
+        Color(0xFF388E3C) -> BitmapDescriptorFactory.HUE_GREEN     // Low
+        Color(0xFFF57F17) -> BitmapDescriptorFactory.HUE_ORANGE    // Medium
+        Color(0xFFFF5722) -> BitmapDescriptorFactory.HUE_ORANGE    // Medium-High
+        Color(0xFFD32F2F) -> BitmapDescriptorFactory.HUE_RED       // High
+        Color(0xFFB71C1C) -> BitmapDescriptorFactory.HUE_RED       // Severe
+        else -> BitmapDescriptorFactory.HUE_GREEN
+    }
+    return BitmapDescriptorFactory.defaultMarker(hue)
 }

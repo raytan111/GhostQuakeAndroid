@@ -20,12 +20,10 @@ import ghost.quake.presentation.theme.DarkModeColors
 fun LandscapeLayout(
     state: HomeState,
     colors: DarkModeColors,
-    isVisible: Boolean
+    isVisible: Boolean,
+    onEarthquakeClick: (String) -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Panel izquierdo
+    Row(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -50,7 +48,8 @@ fun LandscapeLayout(
                             LastEarthquakeCard(
                                 earthquake = state.earthquakes.first(),
                                 colors = colors,
-                                isLastEarthquake = true
+                                isLastEarthquake = true,
+                                onCardClick = onEarthquakeClick
                             )
                             QuickStats(
                                 earthquakes = state.earthquakes,
@@ -62,7 +61,6 @@ fun LandscapeLayout(
             }
         }
 
-        // Separador vertical
         Box(
             modifier = Modifier
                 .width(1.dp)
@@ -70,19 +68,12 @@ fun LandscapeLayout(
                 .background(colors.cardBackground)
         )
 
-        // Panel derecho
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
+        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn() + slideInHorizontally(initialOffsetX = { it })
             ) {
-                Column(
-                    modifier = Modifier.fillMaxHeight()
-                ) {
+                Column(modifier = Modifier.fillMaxHeight()) {
                     Text(
                         text = "Últimos Sismos",
                         style = MaterialTheme.typography.headlineMedium.copy(
@@ -91,9 +82,7 @@ fun LandscapeLayout(
                         ),
                         modifier = Modifier.padding(16.dp)
                     )
-                    LazyColumn(
-                        modifier = Modifier.fillMaxHeight()
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxHeight()) {
                         items(
                             items = state.earthquakes.drop(1),
                             key = { earthquake -> "${earthquake.date}${earthquake.hour}${earthquake.magnitude}" }
@@ -101,7 +90,8 @@ fun LandscapeLayout(
                             EarthquakeItem(
                                 earthquake = earthquake,
                                 colors = colors,
-                                isLastEarthquake = false
+                                isLastEarthquake = false,
+                                onCardClick = onEarthquakeClick
                             )
                         }
                     }

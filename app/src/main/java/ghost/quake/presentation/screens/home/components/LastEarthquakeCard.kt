@@ -21,7 +21,8 @@ import ghost.quake.presentation.theme.DarkModeColors
 fun LastEarthquakeCard(
     earthquake: Earthquake,
     colors: DarkModeColors,
-    isLastEarthquake: Boolean
+    isLastEarthquake: Boolean,
+    onCardClick: (String) -> Unit // Nuevo parámetro
 ) {
     Card(
         modifier = Modifier
@@ -32,7 +33,8 @@ fun LastEarthquakeCard(
                 shape = RoundedCornerShape(16.dp)
             ),
         colors = CardDefaults.cardColors(containerColor = colors.cardBackground),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        onClick = { onCardClick(earthquake.id) }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

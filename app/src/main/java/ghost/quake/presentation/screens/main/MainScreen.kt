@@ -29,86 +29,80 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                modifier = Modifier.height(56.dp)  // Altura reducida de la barra
+                modifier = Modifier.height(56.dp)  // Altura de la barra de navegación
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                // Map Item
+                // Mapa
                 NavigationBarItem(
                     icon = {
                         Icon(
                             Icons.Default.Place,
-                            "Mapa",
-                            modifier = Modifier.size(22.dp)  // Icono más pequeño
+                            contentDescription = "Mapa",
+                            modifier = Modifier.size(22.dp) // Icono más pequeño
                         )
                     },
                     label = {
                         Text(
                             "Mapa",
-                            fontSize = 11.sp  // Texto más pequeño
+                            fontSize = 11.sp // Texto más pequeño
                         )
                     },
                     selected = currentRoute == Screen.Map.route,
                     onClick = {
                         navController.navigate(Screen.Map.route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
                 )
 
-                // Home Item
+                // Inicio
                 NavigationBarItem(
                     icon = {
                         Icon(
                             Icons.Default.Home,
-                            "Inicio",
-                            modifier = Modifier.size(22.dp)  // Icono más pequeño
+                            contentDescription = "Inicio",
+                            modifier = Modifier.size(22.dp) // Icono más pequeño
                         )
                     },
                     label = {
                         Text(
                             "Inicio",
-                            fontSize = 11.sp  // Texto más pequeño
+                            fontSize = 11.sp // Texto más pequeño
                         )
                     },
                     selected = currentRoute == Screen.Home.route,
                     onClick = {
                         navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
                 )
 
-                // Settings Item
+                // Ajustes
                 NavigationBarItem(
                     icon = {
                         Icon(
                             Icons.Default.Settings,
-                            "Ajustes",
-                            modifier = Modifier.size(22.dp)  // Icono más pequeño
+                            contentDescription = "Ajustes",
+                            modifier = Modifier.size(22.dp) // Icono más pequeño
                         )
                     },
                     label = {
                         Text(
                             "Ajustes",
-                            fontSize = 11.sp  // Texto más pequeño
+                            fontSize = 11.sp // Texto más pequeño
                         )
                     },
                     selected = currentRoute == Screen.Settings.route,
                     onClick = {
                         navController.navigate(Screen.Settings.route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
                             launchSingleTop = true
                             restoreState = true
                         }

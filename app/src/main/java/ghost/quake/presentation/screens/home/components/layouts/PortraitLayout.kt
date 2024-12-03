@@ -20,21 +20,16 @@ import ghost.quake.presentation.theme.DarkModeColors
 fun PortraitLayout(
     state: HomeState,
     colors: DarkModeColors,
-    isVisible: Boolean
+    isVisible: Boolean,
+    onEarthquakeClick: (String) -> Unit // Nuevo parámetro
 ) {
     LazyColumn {
-        // Último sismo
         if (state.earthquakes.isNotEmpty()) {
             item {
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(
-                        initialAlpha = 0f,
-                        animationSpec = tween(durationMillis = 500)
-                    ) + slideInVertically(
-                        initialOffsetY = { -100 },
-                        animationSpec = tween(durationMillis = 500)
-                    )
+                    enter = fadeIn(initialAlpha = 0f, animationSpec = tween(durationMillis = 500)) +
+                            slideInVertically(initialOffsetY = { -100 }, animationSpec = tween(durationMillis = 500))
                 ) {
                     Column {
                         Text(
@@ -48,7 +43,8 @@ fun PortraitLayout(
                         LastEarthquakeCard(
                             earthquake = state.earthquakes.first(),
                             colors = colors,
-                            isLastEarthquake = true
+                            isLastEarthquake = true,
+                            onCardClick = onEarthquakeClick
                         )
                     }
                 }
@@ -112,7 +108,8 @@ fun PortraitLayout(
                 EarthquakeItem(
                     earthquake = earthquake,
                     colors = colors,
-                    isLastEarthquake = false
+                    isLastEarthquake = false,
+                    onCardClick = onEarthquakeClick  // Add this line
                 )
             }
         }
