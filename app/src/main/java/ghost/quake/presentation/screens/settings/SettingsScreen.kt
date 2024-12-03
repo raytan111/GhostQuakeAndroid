@@ -19,6 +19,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
+import android.os.Build
+import ghost.quake.util.*
 
 @Composable
 fun SettingsScreen() {
@@ -61,10 +72,10 @@ fun SettingsScreen() {
                 )
 
                 SettingsSection(
-                    title = "Ubicación",
+                    title = "Permisos de Ubicación",
                     icon = Icons.Default.LocationOn
                 ) {
-                    LocationContent()
+                    UbicationContent()
                 }
 
                 SettingsSection(
@@ -97,37 +108,153 @@ fun SettingsScreen() {
 }
 
 @Composable
-private fun LocationContent() {
-    var text by remember { mutableStateOf("") }
-    OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
-        placeholder = {
-            Text(
-                "Dirección",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-            focusedBorderColor = MaterialTheme.colorScheme.primary
-        ),
-        singleLine = true,
-        shape = MaterialTheme.shapes.medium
+private fun UbicationContent() {
+    val context = LocalContext.current
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            hasLocationPermission = isGranted
+            if (!isGranted) {
+                showPermissionDialog = true
+            }
+        }
+    )
+
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Permiso de ubicación requerido") },
+            text = { Text("Para mostrar sismos cercanos, necesitamos acceder a tu ubicación. Por favor, habilita el permiso en la configuración.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionDialog = false
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Text("Ir a Ajustes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    SettingItem(
+        title = "Permitir Ubicación",
+        subtitle = "Necesitamos tu ubicación para mostrarte sismos cercanos",
+        checked = hasLocationPermission,
+        onCheckedChange = { enabled ->
+            if (enabled) {
+                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            } else {
+                showPermissionDialog = true
+            }
+        }
     )
 }
 
 @Composable
 private fun NotificationsContent() {
-    var notificationsEnabled by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var showPermissionDialog by remember { mutableStateOf(false) }
+    val notificationManager = remember { NotificationManagerHelper(context) }
+
+    // Estado para los permisos de notificación
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
+    }
+
+    // Launcher para solicitar permisos
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            hasNotificationPermission = isGranted
+            if (isGranted) {
+                // Mostrar notificación de confirmación
+                notificationManager.showNotification(
+                    "Notificaciones Activadas",
+                    "Recibirás alertas sobre actividad sísmica"
+                )
+            } else {
+                showPermissionDialog = true
+            }
+        }
+    )
+
+    // Diálogo para cuando se deniegan los permisos
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Permiso de notificaciones requerido") },
+            text = { Text("Para recibir alertas sobre actividad sísmica, necesitamos tu permiso. Por favor, habilita las notificaciones en la configuración.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionDialog = false
+                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Text("Ir a Ajustes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     SettingItem(
         title = "Activar Notificaciones",
         subtitle = "Recibe alertas sobre actividad sísmica",
-        checked = notificationsEnabled,
-        onCheckedChange = { notificationsEnabled = it }
+        checked = hasNotificationPermission,
+        onCheckedChange = { enabled ->
+            if (enabled) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    // En versiones anteriores a Android 13, no se necesita permiso explícito
+                    hasNotificationPermission = true
+                    notificationManager.showNotification(
+                        "Notificaciones Activadas",
+                        "Recibirás alertas sobre actividad sísmica"
+                    )
+                }
+            } else {
+                showPermissionDialog = true
+            }
+        }
     )
 }
 
