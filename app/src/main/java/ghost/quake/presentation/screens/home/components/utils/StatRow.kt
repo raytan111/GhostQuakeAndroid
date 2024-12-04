@@ -1,4 +1,4 @@
-package ghost.quake.presentation.screens.home.components
+package ghost.quake.presentation.screens.home.components.utils
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

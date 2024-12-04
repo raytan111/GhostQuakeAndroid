@@ -1,7 +1,12 @@
 package ghost.quake.presentation.screens.details
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -12,11 +17,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,12 +35,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ghost.quake.domain.model.Earthquake
 import ghost.quake.domain.repository.EarthquakeRepository
 import ghost.quake.presentation.theme.DarkModeColors
-import ghost.quake.presentation.navigation.Screen
+import ghost.quake.presentation.theme.EarthquakeColors
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.window.Dialog
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
@@ -54,6 +61,16 @@ class DetailViewModel @Inject constructor(
 data class DetailState(
     val earthquake: Earthquake? = null
 )
+
+private fun getMagnitudeColor(magnitude: Double): Color {
+    return when {
+        magnitude >= 7.0 -> EarthquakeColors.Severe
+        magnitude >= 6.0 -> EarthquakeColors.High
+        magnitude >= 5.0 -> EarthquakeColors.MediumHigh
+        magnitude >= 4.0 -> EarthquakeColors.Medium
+        else -> EarthquakeColors.Low
+    }
+}
 
 @Composable
 private fun InformacionUtil(magnitude: Double, colors: DarkModeColors) {
@@ -88,22 +105,24 @@ private fun InformacionUtil(magnitude: Double, colors: DarkModeColors) {
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colors.cardBackground)
+        colors = CardDefaults.cardColors(containerColor = colors.cardBackground),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
                 text = titulo,
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = colors.textColor
+                color = getMagnitudeColor(magnitude)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = informacion,
                 fontSize = 16.sp,
-                color = colors.textColor
+                color = colors.textColor,
+                lineHeight = 24.sp
             )
         }
     }
@@ -119,9 +138,16 @@ fun EarthquakeDetailScreen(
 ) {
     val state by viewModel.state
     var showImageDialog by remember { mutableStateOf(false) }
+    var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.getEarthquake(id)
+        delay(100) // Esperar a que los datos se carguen
+        visible = false
+        launch {
+            delay(200)
+            visible = true
+        }
     }
 
     state.earthquake?.let { earthquake ->
@@ -130,7 +156,8 @@ fun EarthquakeDetailScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(16.dp)),
                     colors = CardDefaults.cardColors(containerColor = colors.cardBackground)
                 ) {
                     Box(
@@ -143,7 +170,8 @@ fun EarthquakeDetailScreen(
                             contentDescription = "Mapa del sismo",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(400.dp),
+                                .height(400.dp)
+                                .clip(RoundedCornerShape(12.dp)),
                             contentScale = ContentScale.Fit
                         )
                         IconButton(
@@ -151,11 +179,15 @@ fun EarthquakeDetailScreen(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(4.dp)
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.8f))
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
                                 contentDescription = "Cerrar",
-                                tint = Color.Black
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -166,15 +198,21 @@ fun EarthquakeDetailScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Detalles del Sismo") },
+                    title = {
+                        Text(
+                            "Detalles del Sismo",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Regresar")
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
+                    colors = TopAppBarDefaults.largeTopAppBarColors(
                         containerColor = colors.cardBackground,
-                        titleContentColor = colors.textColor
+                        titleContentColor = colors.textColor,
+                        navigationIconContentColor = colors.textColor
                     )
                 )
             },
@@ -185,87 +223,181 @@ fun EarthquakeDetailScreen(
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
             ) {
-                AsyncImage(
-                    model = earthquake.image,
-                    contentDescription = "Mapa del sismo",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { showImageDialog = true },
-                    contentScale = ContentScale.Crop
-                )
-
-                Card(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = colors.cardBackground)
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = fadeIn(
+                        initialAlpha = 0f,
+                        animationSpec = tween(durationMillis = 500)
+                    ) + expandVertically(
+                        expandFrom = Alignment.Top,
+                        animationSpec = tween(durationMillis = 500)
+                    )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Magnitud ${earthquake.magnitude}",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.textColor
-                        )
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .padding(16.dp)
+                        ) {
+                            AsyncImage(
+                                model = earthquake.image,
+                                contentDescription = "Mapa del sismo",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .clickable { showImageDialog = true },
+                                contentScale = ContentScale.Crop
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color.Black.copy(alpha = 0.3f)
+                                            )
+                                        )
+                                    )
+                            )
+                        }
+
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(
+                                initialAlpha = 0f,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 100
+                                )
+                            ) + expandVertically(
+                                expandFrom = Alignment.Top,
+                                animationSpec = tween(durationMillis = 500, delayMillis = 100)
+                            )
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = getMagnitudeColor(earthquake.magnitude)
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = earthquake.magnitude.toString(),
+                                            fontSize = 48.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                        Text(
+                                            text = "Magnitud",
+                                            fontSize = 16.sp,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(
+                                initialAlpha = 0f,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 200
+                                )
+                            ) + expandVertically(
+                                expandFrom = Alignment.Top,
+                                animationSpec = tween(durationMillis = 500, delayMillis = 200)
+                            )
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = colors.cardBackground),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(20.dp)
+                                        .animateContentSize(),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    DetailRow(
+                                        icon = Icons.Rounded.LocationOn,
+                                        label = "Ubicación",
+                                        value = earthquake.place,
+                                        colors = colors
+                                    )
+
+                                    HorizontalDivider(color = colors.secondaryText.copy(alpha = 0.1f))
+
+                                    DetailRow(
+                                        icon = Icons.Rounded.CalendarMonth,
+                                        label = "Fecha",
+                                        value = earthquake.date,
+                                        colors = colors
+                                    )
+
+                                    HorizontalDivider(color = colors.secondaryText.copy(alpha = 0.1f))
+
+                                    DetailRow(
+                                        icon = Icons.Rounded.Schedule,
+                                        label = "Hora",
+                                        value = earthquake.hour,
+                                        colors = colors
+                                    )
+
+                                    HorizontalDivider(color = colors.secondaryText.copy(alpha = 0.1f))
+
+                                    DetailRow(
+                                        icon = Icons.Rounded.Straighten,
+                                        label = "Profundidad",
+                                        value = "${earthquake.depth} km",
+                                        colors = colors
+                                    )
+
+                                    HorizontalDivider(color = colors.secondaryText.copy(alpha = 0.1f))
+
+                                    DetailRow(
+                                        icon = Icons.Rounded.MyLocation,
+                                        label = "Coordenadas",
+                                        value = "${earthquake.latitude}, ${earthquake.longitude}",
+                                        colors = colors
+                                    )
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(
+                                initialAlpha = 0f,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 300
+                                )
+                            ) + expandVertically(
+                                expandFrom = Alignment.Top,
+                                animationSpec = tween(durationMillis = 500, delayMillis = 300)
+                            )
+                        ) {
+                            InformacionUtil(earthquake.magnitude, colors)
+                        }
                     }
                 }
-
-                Card(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = colors.cardBackground)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        DetailRow(
-                            icon = Icons.Rounded.LocationOn,
-                            label = "Ubicación",
-                            value = earthquake.place,
-                            colors = colors
-                        )
-
-                        DetailRow(
-                            icon = Icons.Rounded.CalendarMonth,
-                            label = "Fecha",
-                            value = earthquake.date,
-                            colors = colors
-                        )
-
-                        DetailRow(
-                            icon = Icons.Rounded.Schedule,
-                            label = "Hora",
-                            value = earthquake.hour,
-                            colors = colors
-                        )
-
-                        DetailRow(
-                            icon = Icons.Rounded.Straighten,
-                            label = "Profundidad",
-                            value = "${earthquake.depth} km",
-                            colors = colors
-                        )
-
-                        DetailRow(
-                            icon = Icons.Rounded.MyLocation,
-                            label = "Coordenadas",
-                            value = "${earthquake.latitude}, ${earthquake.longitude}",
-                            colors = colors
-                        )
-                    }
-                }
-
-                InformacionUtil(earthquake.magnitude, colors)
             }
         }
     }
@@ -280,15 +412,17 @@ private fun DetailRow(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             tint = colors.secondaryText,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(28.dp)
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
                 text = label,
@@ -297,7 +431,7 @@ private fun DetailRow(
             )
             Text(
                 text = value,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 color = colors.textColor,
                 fontWeight = FontWeight.Medium
             )

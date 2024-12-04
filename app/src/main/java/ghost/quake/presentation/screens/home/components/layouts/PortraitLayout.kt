@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import ghost.quake.presentation.screens.home.HomeState
 import ghost.quake.presentation.screens.home.components.EarthquakeItem
 import ghost.quake.presentation.screens.home.components.LastEarthquakeCard
-import ghost.quake.presentation.screens.home.components.QuickStats
 import ghost.quake.presentation.theme.DarkModeColors
 
 @Composable
@@ -48,22 +47,6 @@ fun PortraitLayout(
                         )
                     }
                 }
-            }
-        }
-
-        // Estadísticas
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(
-                    initialAlpha = 0f,
-                    animationSpec = tween(durationMillis = 500, delayMillis = 200)
-                )
-            ) {
-                QuickStats(
-                    earthquakes = state.earthquakes,
-                    colors = colors
-                )
             }
         }
 

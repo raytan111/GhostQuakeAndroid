@@ -77,37 +77,6 @@ fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
                 }
             }
 
-            // Estadísticas skeleton con acordeón
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.cardBackground),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(180.dp)
-                            .height(24.dp)
-                            .shimmerEffect()
-                            .clip(RoundedCornerShape(4.dp))
-                    )
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    ) {
-                        repeat(3) {
-                            StatRowSkeleton()
-                        }
-                    }
-                }
-            }
-
             // Título lista skeleton
             Box(
                 modifier = Modifier
@@ -120,7 +89,7 @@ fun EarthquakeSkeletonLoading(colors: DarkModeColors) {
         }
 
         // Lista de sismos skeleton
-        items(5) {
+        items(6) {
             EarthquakeItemSkeleton(colors = colors)
         }
     }

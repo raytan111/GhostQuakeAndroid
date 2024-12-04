@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import ghost.quake.presentation.screens.home.HomeState
 import ghost.quake.presentation.screens.home.components.EarthquakeItem
 import ghost.quake.presentation.screens.home.components.LastEarthquakeCard
-import ghost.quake.presentation.screens.home.components.QuickStats
 import ghost.quake.presentation.theme.DarkModeColors
 
 @Composable
@@ -50,10 +49,6 @@ fun LandscapeLayout(
                                 colors = colors,
                                 isLastEarthquake = true,
                                 onCardClick = onEarthquakeClick
-                            )
-                            QuickStats(
-                                earthquakes = state.earthquakes,
-                                colors = colors
                             )
                         }
                     }

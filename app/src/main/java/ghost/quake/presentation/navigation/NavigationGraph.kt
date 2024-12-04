@@ -15,6 +15,8 @@ import ghost.quake.presentation.theme.getColorsTheme
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 
 
 @Composable
@@ -28,42 +30,27 @@ fun NavigationGraph(
         modifier = modifier
     ) {
         composable(Screen.Map.route) { MapScreen() }
-        composable(Screen.Home.route) { HomeScreen(navController = navController) }
+        composable(Screen.Home.route,
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) }
+        ) {
+            HomeScreen(navController = navController)
+        }
         composable(Screen.Settings.route) { SettingsScreen() }
 
         composable(
             route = Screen.Details.route,
             arguments = listOf(navArgument("earthquakeId") { type = NavType.StringType }),
-            enterTransition = {
-                slideInHorizontally(
-                    initialOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
-                )
-            },
-            exitTransition = {
-                slideOutHorizontally(
-                    targetOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
-                )
-            },
-            popEnterTransition = {
-                slideInHorizontally(
-                    initialOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
-                )
-            },
-            popExitTransition = {
-                slideOutHorizontally(
-                    targetOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
-                )
-            }
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
         ) { backStackEntry ->
             val earthquakeId = backStackEntry.arguments?.getString("earthquakeId") ?: ""
             EarthquakeDetailScreen(
                 id = earthquakeId,
                 colors = getColorsTheme(),
-                navController = navController // Aquí pasamos el navController
+                navController = navController
             )
         }
     }
