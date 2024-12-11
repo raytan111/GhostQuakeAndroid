@@ -32,18 +32,17 @@
         android:theme="@style/Theme.GhostQuakeAndroid"
         tools:targetApi="31">
 
-        <!-- Provider para WorkManager con Hilt -->
+        <!-- Configuración unificada para WorkManager -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove" />
-
-        <!-- Configuración del HiltWorkerFactory -->
-        <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
             android:exported="false"
-            tools:node="remove" />
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove"/>
+        </provider>
 
         <!-- Metadata para la API Key de Google Maps -->
         <meta-data
@@ -58,7 +57,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.GhostQuakeAndroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

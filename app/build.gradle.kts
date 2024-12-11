@@ -114,7 +114,7 @@ dependencies {
     implementation(libs.google.play.services.location)
 
     // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.work:work-runtime:2.9.0")
-    implementation("androidx.hilt:hilt-work:1.1.0")
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
 }
