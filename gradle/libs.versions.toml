@@ -26,6 +26,7 @@ hilt-navigation-compose = "1.1.0"
 googlePlayServices-maps = "18.2.0"
 googlePlayServices-location = "21.2.0"
 maps-compose = "2.11.4"
+hiltCommon = "1.2.0"
 
 [libraries]
 androidx-animation = { module = "androidx.compose.animation:animation", version.ref = "animation" }
@@ -70,6 +71,7 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "maps-compose" }
 google-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googlePlayServices-maps" }
 google-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "googlePlayServices-location" }
+androidx-hilt-common = { group = "androidx.hilt", name = "hilt-common", version.ref = "hiltCommon" }
 
 
 [plugins]

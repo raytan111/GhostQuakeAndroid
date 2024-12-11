@@ -16,6 +16,9 @@
     <!-- Permiso para Notificaciones -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:name=".GhostQuakeApplication"
         android:usesCleartextTraffic="true"
@@ -28,6 +31,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GhostQuakeAndroid"
         tools:targetApi="31">
+
+        <!-- Provider para WorkManager con Hilt -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
+
+        <!-- Configuración del HiltWorkerFactory -->
+        <provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            android:exported="false"
+            tools:node="remove" />
 
         <!-- Metadata para la API Key de Google Maps -->
         <meta-data

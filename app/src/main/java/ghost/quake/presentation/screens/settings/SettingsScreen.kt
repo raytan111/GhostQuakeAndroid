@@ -1,5 +1,12 @@
 package ghost.quake.presentation.screens.settings
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -8,7 +15,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,25 +22,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
-import android.os.Build
-import ghost.quake.util.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     var isVisible by remember { mutableStateOf(false) }
 
@@ -75,21 +77,14 @@ fun SettingsScreen() {
                     title = "Permisos de Ubicación",
                     icon = Icons.Default.LocationOn
                 ) {
-                    UbicationContent()
+                    LocationContent(viewModel)
                 }
 
                 SettingsSection(
                     title = "Notificaciones",
                     icon = Icons.Default.Notifications
                 ) {
-                    NotificationsContent()
-                }
-
-                SettingsSection(
-                    title = "Apariencia",
-                    icon = Icons.Default.Settings
-                ) {
-                    AppearanceContent()
+                    NotificationsContent(viewModel)
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -108,23 +103,17 @@ fun SettingsScreen() {
 }
 
 @Composable
-private fun UbicationContent() {
+private fun LocationContent(
+    viewModel: SettingsViewModel
+) {
     val context = LocalContext.current
     var showPermissionDialog by remember { mutableStateOf(false) }
-
-    var hasLocationPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-            hasLocationPermission = isGranted
+            viewModel.setLocationEnabled(isGranted)
             if (!isGranted) {
                 showPermissionDialog = true
             }
@@ -135,7 +124,7 @@ private fun UbicationContent() {
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
             title = { Text("Permiso de ubicación requerido") },
-            text = { Text("Para mostrar sismos cercanos, necesitamos acceder a tu ubicación. Por favor, habilita el permiso en la configuración.") },
+            text = { Text("Para mostrar sismos cercanos, necesitamos acceder a tu ubicación. Esto te permitirá ver sismos que podrías sentir en tu área.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -159,61 +148,51 @@ private fun UbicationContent() {
 
     SettingItem(
         title = "Permitir Ubicación",
-        subtitle = "Necesitamos tu ubicación para mostrarte sismos cercanos",
-        checked = hasLocationPermission,
+        subtitle = if (state.locationEnabled)
+            "Ubicación permitida - Verás sismos que podrías sentir en tu área"
+        else
+            "Permite acceso a tu ubicación para ver sismos cercanos",
+        checked = state.locationEnabled,
         onCheckedChange = { enabled ->
             if (enabled) {
                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             } else {
-                showPermissionDialog = true
+                viewModel.setLocationEnabled(false)
             }
         }
     )
 }
 
 @Composable
-private fun NotificationsContent() {
+private fun NotificationsContent(
+    viewModel: SettingsViewModel
+) {
     val context = LocalContext.current
     var showPermissionDialog by remember { mutableStateOf(false) }
-    val notificationManager = remember { NotificationManagerHelper(context) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Estado para los permisos de notificación
-    var hasNotificationPermission by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            } else {
-                true
-            }
-        )
-    }
-
-    // Launcher para solicitar permisos
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-            hasNotificationPermission = isGranted
-            if (isGranted) {
-                // Mostrar notificación de confirmación
-                notificationManager.showNotification(
-                    "Notificaciones Activadas",
-                    "Recibirás alertas sobre actividad sísmica"
-                )
-            } else {
+            viewModel.setNotificationsEnabled(isGranted)
+            if (!isGranted) {
                 showPermissionDialog = true
             }
         }
     )
 
-    // Diálogo para cuando se deniegan los permisos
     if (showPermissionDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
             title = { Text("Permiso de notificaciones requerido") },
-            text = { Text("Para recibir alertas sobre actividad sísmica, necesitamos tu permiso. Por favor, habilita las notificaciones en la configuración.") },
+            text = {
+                Text(
+                    if (state.locationEnabled)
+                        "Para recibir alertas de sismos cercanos que podrías sentir"
+                    else
+                        "Para recibir alertas de sismos en Chile con magnitud mayor a 5.5"
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -223,7 +202,6 @@ private fun NotificationsContent() {
                                 putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                             }
                         } else {
-                            // Para versiones anteriores a Android 8.0
                             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                                 data = Uri.fromParts("package", context.packageName, null)
                             }
@@ -244,40 +222,27 @@ private fun NotificationsContent() {
 
     SettingItem(
         title = "Activar Notificaciones",
-        subtitle = "Recibe alertas sobre actividad sísmica",
-        checked = hasNotificationPermission,
+        subtitle = if (state.locationEnabled)
+            "Recibe alertas de sismos cercanos que podrías sentir"
+        else
+            "Recibe alertas de sismos en Chile con magnitud mayor a 5.5",
+        checked = state.notificationsEnabled,
         onCheckedChange = { enabled ->
             if (enabled) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
-                    // En versiones anteriores a Android 13, no se necesita permiso explícito
-                    hasNotificationPermission = true
-                    notificationManager.showNotification(
-                        "Notificaciones Activadas",
-                        "Recibirás alertas sobre actividad sísmica"
-                    )
+                    viewModel.setNotificationsEnabled(true)
                 }
             } else {
-                showPermissionDialog = true
+                viewModel.setNotificationsEnabled(false)
             }
         }
     )
 }
 
 @Composable
-private fun AppearanceContent() {
-    var darkModeEnabled by remember { mutableStateOf(false) }
-    SettingItem(
-        title = "Modo Oscuro",
-        subtitle = "Cambia el tema de la aplicación",
-        checked = darkModeEnabled,
-        onCheckedChange = { darkModeEnabled = it }
-    )
-}
-
-@Composable
-fun SettingsSection(
+private fun SettingsSection(
     title: String,
     icon: ImageVector,
     content: @Composable () -> Unit
@@ -316,7 +281,7 @@ fun SettingsSection(
 }
 
 @Composable
-fun SettingItem(
+private fun SettingItem(
     title: String,
     subtitle: String,
     checked: Boolean,
