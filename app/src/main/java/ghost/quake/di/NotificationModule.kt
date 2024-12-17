@@ -7,6 +7,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ghost.quake.util.NotificationManagerHelper
+import ghost.quake.util.NotificationStateManager
+import ghost.quake.util.WorkManagerHelper
+import ghost.quake.data.local.preferences.PreferencesManager
 import javax.inject.Singleton
 
 @Module
@@ -17,4 +20,14 @@ object NotificationModule {
     fun provideNotificationManager(
         @ApplicationContext context: Context
     ): NotificationManagerHelper = NotificationManagerHelper(context)
+
+    @Provides
+    @Singleton
+    fun provideNotificationStateManager(
+        workManagerHelper: WorkManagerHelper,
+        preferencesManager: PreferencesManager
+    ): NotificationStateManager = NotificationStateManager(
+        workManagerHelper = workManagerHelper,
+        preferencesManager = preferencesManager
+    )
 }

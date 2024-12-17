@@ -13,6 +13,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,15 +22,36 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ghost.quake.presentation.navigation.NavigationGraph
 import ghost.quake.presentation.navigation.Screen
+import ghost.quake.util.NotificationStateManager
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    initialEarthquakeId: String? = null,
+    notificationStateManager: NotificationStateManager
+) {
     val navController = rememberNavController()
+
+    // Efecto para manejar la navegación inicial si viene de una notificación
+    LaunchedEffect(initialEarthquakeId) {
+        initialEarthquakeId?.let { id ->
+            navController.navigate("detail/$id") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    // Efecto para inicializar el estado de las notificaciones
+    LaunchedEffect(Unit) {
+        if (notificationStateManager.isNotificationsEnabled()) {
+            notificationStateManager.updateNotificationState(true)
+        }
+    }
 
     Scaffold(
         bottomBar = {
             NavigationBar(
-                modifier = Modifier.height(56.dp)  // Altura de la barra de navegación
+                modifier = Modifier.height(56.dp)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -40,13 +62,13 @@ fun MainScreen() {
                         Icon(
                             Icons.Default.Place,
                             contentDescription = "Mapa",
-                            modifier = Modifier.size(22.dp) // Icono más pequeño
+                            modifier = Modifier.size(22.dp)
                         )
                     },
                     label = {
                         Text(
                             "Mapa",
-                            fontSize = 11.sp // Texto más pequeño
+                            fontSize = 11.sp
                         )
                     },
                     selected = currentRoute == Screen.Map.route,
@@ -65,13 +87,13 @@ fun MainScreen() {
                         Icon(
                             Icons.Default.Home,
                             contentDescription = "Inicio",
-                            modifier = Modifier.size(22.dp) // Icono más pequeño
+                            modifier = Modifier.size(22.dp)
                         )
                     },
                     label = {
                         Text(
                             "Inicio",
-                            fontSize = 11.sp // Texto más pequeño
+                            fontSize = 11.sp
                         )
                     },
                     selected = currentRoute == Screen.Home.route,
@@ -90,13 +112,13 @@ fun MainScreen() {
                         Icon(
                             Icons.Default.Settings,
                             contentDescription = "Ajustes",
-                            modifier = Modifier.size(22.dp) // Icono más pequeño
+                            modifier = Modifier.size(22.dp)
                         )
                     },
                     label = {
                         Text(
                             "Ajustes",
-                            fontSize = 11.sp // Texto más pequeño
+                            fontSize = 11.sp
                         )
                     },
                     selected = currentRoute == Screen.Settings.route,

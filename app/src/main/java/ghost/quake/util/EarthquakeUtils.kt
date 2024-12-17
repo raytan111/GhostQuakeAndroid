@@ -8,7 +8,7 @@ object EarthquakeUtils {
     /**
      * Calcula la distancia entre dos puntos usando la fórmula de Haversine
      */
-    fun calculateDistance(
+    private fun calculateDistance(
         lat1: Double,
         lon1: Double,
         lat2: Double,
@@ -29,7 +29,7 @@ object EarthquakeUtils {
      * Calcula el radio de impacto aproximado basado en la magnitud
      * Esta es una aproximación simplificada - los sismos más fuertes se sienten a mayor distancia
      */
-    fun calculateImpactRadius(magnitude: Double): Double {
+    private fun calculateImpactRadius(magnitude: Double): Double {
         return when {
             magnitude >= 7.0 -> 300.0  // Puede sentirse hasta 300km
             magnitude >= 6.0 -> 200.0  // Puede sentirse hasta 200km

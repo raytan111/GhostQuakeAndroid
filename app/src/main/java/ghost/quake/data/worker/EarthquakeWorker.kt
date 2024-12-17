@@ -1,4 +1,3 @@
-
 package ghost.quake.data.worker
 
 import android.Manifest
@@ -20,29 +19,43 @@ import ghost.quake.data.local.preferences.PreferencesManager
 
 @HiltWorker
 class EarthquakeWorker @AssistedInject constructor(
-    @Assisted private val context: Context,
+    @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val getRecentEarthquakesUseCase: GetRecentEarthquakesUseCase,
     private val notificationManager: NotificationManagerHelper,
     private val preferencesManager: PreferencesManager
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
 
-    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
     private var lastProcessedEarthquakeId: String? = null
 
+    init {
+        Log.d("EarthquakeWorker", "Worker initialized with dependencies: " +
+                "UseCase=$getRecentEarthquakesUseCase, " +
+                "NotificationManager=$notificationManager, " +
+                "PreferencesManager=$preferencesManager")
+    }
+
     override suspend fun doWork(): Result {
+        Log.d("EarthquakeWorker", "Worker started")
         try {
             if (!preferencesManager.areNotificationsEnabled()) {
+                Log.d("EarthquakeWorker", "Notifications are disabled, stopping worker")
                 return Result.success()
             }
 
             val location = getCurrentLocation()
             val hasLocationPermission = hasLocationPermission()
-            val magnitudeThreshold = 5.5
+            val magnitudeThreshold = 3.0
+
+            Log.d("EarthquakeWorker", "Checking for earthquakes. Has location permission: $hasLocationPermission")
 
             getRecentEarthquakesUseCase()
                 .onSuccess { earthquakes ->
+                    Log.d("EarthquakeWorker", "Retrieved ${earthquakes.size} earthquakes from API")
+
                     val relevantEarthquakes = if (hasLocationPermission && location != null) {
+                        Log.d("EarthquakeWorker", "Filtering earthquakes by location and magnitude")
                         earthquakes.filter { earthquake ->
                             earthquake.magnitude >= magnitudeThreshold &&
                                     EarthquakeUtils.canBePerceivedAtLocation(
@@ -54,12 +67,16 @@ class EarthquakeWorker @AssistedInject constructor(
                                     )
                         }
                     } else {
+                        Log.d("EarthquakeWorker", "Filtering earthquakes by magnitude only")
                         earthquakes.filter { it.magnitude >= magnitudeThreshold }
                     }
+
+                    Log.d("EarthquakeWorker", "Found ${relevantEarthquakes.size} relevant earthquakes")
 
                     relevantEarthquakes
                         .firstOrNull { it.id != lastProcessedEarthquakeId }
                         ?.let { earthquake ->
+                            Log.d("EarthquakeWorker", "Sending notification for earthquake: Magnitude ${earthquake.magnitude} at ${earthquake.place}")
                             lastProcessedEarthquakeId = earthquake.id
                             notificationManager.showEarthquakeNotification(
                                 title = "¡Sismo Significativo Detectado!",
@@ -72,6 +89,7 @@ class EarthquakeWorker @AssistedInject constructor(
                     Log.e("EarthquakeWorker", "Error checking earthquakes", exception)
                 }
 
+            Log.d("EarthquakeWorker", "Worker completed successfully")
             return Result.success()
         } catch (e: Exception) {
             Log.e("EarthquakeWorker", "Worker failed", e)
@@ -81,7 +99,7 @@ class EarthquakeWorker @AssistedInject constructor(
 
     private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
+            applicationContext,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
@@ -91,8 +109,8 @@ class EarthquakeWorker @AssistedInject constructor(
         if (!hasLocationPermission()) return null
 
         return try {
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                ?: locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
         } catch (e: Exception) {
             Log.e("EarthquakeWorker", "Error getting location", e)
             null

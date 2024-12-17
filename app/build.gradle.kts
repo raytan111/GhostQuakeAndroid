@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+    kapt(libs.androidx.hilt.compiler)
 
     // Maps
     implementation(libs.google.maps.compose)
@@ -117,4 +118,5 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
+    kapt(libs.androidx.hilt.compiler)
 }

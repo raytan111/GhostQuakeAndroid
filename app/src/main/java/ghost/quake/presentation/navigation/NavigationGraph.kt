@@ -12,8 +12,6 @@ import ghost.quake.presentation.screens.home.HomeScreen
 import ghost.quake.presentation.screens.map.MapScreen
 import ghost.quake.presentation.screens.settings.SettingsScreen
 import ghost.quake.presentation.theme.getColorsTheme
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
