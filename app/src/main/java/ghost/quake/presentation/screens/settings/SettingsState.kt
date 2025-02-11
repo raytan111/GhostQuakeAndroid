@@ -5,5 +5,5 @@ data class SettingsState(
     val error: String? = null,
     val notificationsEnabled: Boolean = false,
     val locationEnabled: Boolean = false,
-    val magnitudeThreshold: Double = 3.0
+    val magnitudeThreshold: Double = 5.0
 )
